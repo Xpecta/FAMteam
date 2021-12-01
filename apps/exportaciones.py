@@ -31,7 +31,7 @@ def app():
 
 
     if file is not None:
-        df = pd.read_excel(file, sheet_name = 'Data')
+        df = pd.read_excel(file, sheet_name = 'Data', engine='openpyxl')
 
         principales_navieras = st.checkbox('Principales navieras',True)
         if principales_navieras:
