@@ -15,7 +15,7 @@ class MultiApp:
         )
 
     def run(self):
-        st.set_page_config(page_title='FAM')#,page_icon=Image.open('Imagenes/x.png'))
+        st.set_page_config(page_title='FAM', layout="wide")#,page_icon=Image.open('Imagenes/x.png'))
         st.sidebar.title('Menú')
         app= st.sidebar.selectbox(
             '',
