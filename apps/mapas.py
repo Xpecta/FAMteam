@@ -27,6 +27,8 @@ def app():
         tabla = data.groupby(columna).sum().reset_index().sort_values(unidad, ascending = False).reset_index()[:10]
         fig = plt.figure()
         sns.barplot(y = columna, x = unidad , data = tabla, color =  'skyblue')
+        plt.ticklabel_format(style='plain', axis='x')
+        plt.xticks(rotation=45,ha='right')
         return fig
 
     @st.cache
@@ -36,8 +38,7 @@ def app():
         return df
 
     with st.spinner('En proseso...'):
-       df = leer_data()
-
+       df = leer_data().drop(columns='Unnamed: 0')
 
     st.write('# Filtros')
 
@@ -48,8 +49,9 @@ def app():
     c2.write('### Tipo de comercio')
     tipo_comercio = c2.radio( 'Tipo de comercio', ['Todos']+list(set(df['Tipo de transporte'])))
     c3.write('### Embarcamiento')
-    origenes = c3.multiselect('Origen del embarcamiento', ['Seleccionar']+list(set(df['País exportador'])))
-    detinos = c3.multiselect('Destino del embarcamiento', ['Seleccionar', 'Colombia'])
+    origenes = c3.multiselect('Origen del embarcamiento (País)', ['Seleccionar']+list(set(df['País exportador'])))
+    origenes_ciudad = c3.multiselect('Origen del embarcamiento (Ciudad)', ['Seleccionar']+list(set(df['Ciudad de procedencia'])))
+    destinos = c3.multiselect('Destino del embarcamiento', ['Seleccionar']+list(set(df['Ciudad de ingreso'])))
     c4.write('### Producto')
     cap = c4.selectbox('Filtrar por capítulo', ['Seleccionar']+list(set(df['Descripción Capítulo'])))
     partida = c4.selectbox('Filtrar por subpartida', ['Seleccionar']+list(set(df['Descripción supbartida'])))
@@ -70,15 +72,23 @@ def app():
                 c = df['Tipo de transporte']!= 'nada'
             else:
                 c = df['País exportador'].isin(origenes)
+            if origenes_ciudad == []:
+                d = df['Ciudad de procedencia']!= 'nada'
+            else:
+                d = df['Ciudad de procedencia'].isin(origenes_ciudad)
+            if destinos == []:
+                e = df['Ciudad de ingreso']!= 'nada'
+            else:
+                e = df['Ciudad de ingreso'].isin(destinos)
             if cap != 'Seleccionar':
-                d = df['Descripción Capítulo'] == cap
+                f = df['Descripción Capítulo'] == cap
             else:
-                d = df['Tipo de transporte']!= 'nada'
+                f = df['Tipo de transporte']!= 'nada'
             if partida != 'Seleccionar':
-                e = df['Descripción supbartida'] == partida
+                g = df['Descripción supbartida'] == partida
             else:
-                e = df['Tipo de transporte']!= 'nada'
-            data = df[a&b&c&d&e].copy()
+                g = df['Tipo de transporte']!= 'nada'
+            data = df[a&b&c&d&e&f&g].copy()
             data['Número de embarcamientos']= 1
 
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
@@ -100,14 +110,16 @@ def app():
         c3.write(f'# {t3}')
 
         c1, c2 = st.columns(2)
-
-        c1.write('## Principales navieras')
-        c1.pyplot(barras('Agente Naviero', unidad))
-        c2.write('## Principales productos')
-        c2.pyplot(barras('Descripción Capítulo', unidad))
-        c2.write('## Principales tipos de transporte')
-        c2.pyplot(barras('Tipo de transporte', unidad))
-        st.write(data.head(20))
+        try:
+            c1.write('## Principales navieras')
+            c1.pyplot(barras('Agente Naviero', unidad))
+            c2.write('## Principales productos')
+            c2.pyplot(barras('Descripción Capítulo', unidad))
+            c2.write('## Principales tipos de transporte')
+            c2.pyplot(barras('Tipo de transporte', unidad))
+            st.write(data.head(20))
+        except Exception as e:
+            st.warning("No hay datos disponibles para su selección actual. Modifique los filtros para obtener datos")
 
 
 
