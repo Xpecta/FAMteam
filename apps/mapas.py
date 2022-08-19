@@ -25,10 +25,13 @@ def app():
 
     def barras(columna, unidad):
         tabla = data.groupby(columna).sum().reset_index().sort_values(unidad, ascending = False).reset_index()[:10]
-        fig = plt.figure()
-        sns.barplot(y = columna, x = unidad , data = tabla, color =  'skyblue')
+        y=tabla[unidad].round().to_list()
+        fig,ax = plt.subplots()
+        sns.barplot(y = columna, x = unidad , data = tabla, color =  'skyblue',ax=ax)
         plt.ticklabel_format(style='plain', axis='x')
         plt.xticks(rotation=45,ha='right')
+        for i, v in enumerate(y):
+            ax.text(v + 3, i + .25, str(v), color='white', fontweight='bold')
         return fig
 
     @st.cache
